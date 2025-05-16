@@ -1,4 +1,9 @@
-package com.example.studentstay.model;
+package com.example.studentstay.dto;
+
+
+import com.example.studentstay.model.Assignment;
+import com.example.studentstay.model.Payment;
+import com.example.studentstay.model.Student;
 
 import java.util.List;
 

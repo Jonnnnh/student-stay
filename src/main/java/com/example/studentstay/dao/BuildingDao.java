@@ -1,47 +1,56 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
 import com.example.studentstay.model.Building;
+import com.example.studentstay.model.Room;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.query.Root;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
-import java.sql.SQLException;
+import java.util.List;
 
-public class BuildingDao extends AbstractCrudDao<Building, Long> {
-    public BuildingDao(Executor executor) {
-        super(executor, Building.class);
+public class BuildingDao {
+    private final Repository<Building, Long> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public BuildingDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Building.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "buildings";
+    public Building findById(Long id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Building b) throws SQLException {
-        String sql = "INSERT INTO buildings (name, address) VALUES (?, ?)";
-        executor.executeUpdate(sql, b.getName(), b.getAddress());
+    public List<Building> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Building b) throws SQLException {
-        String sql = "UPDATE buildings SET name = ?, address = ? WHERE id = ?";
-        executor.executeUpdate(sql, b.getName(), b.getAddress(), b.getId());
+    public Building create(Building b) {
+        repo.save(b);
+        return b;
     }
 
-    public boolean hasRooms(long buildingId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM rooms WHERE building_id = ?";
-        Integer cnt = executor.executeSingleResult(
-                sql,
-                (rs) -> rs.getInt(1),
-                buildingId
-        );
-        return cnt != null && cnt > 0;
+    public Building update(Building b) {
+        repo.save(b);
+        return b;
     }
 
-    @Override
-    public void delete(Long id) throws SQLException {
-        if (hasRooms(id)) {
-            throw new SQLException("Нельзя удалить корпус: в нём остались комнаты");
+    public void delete(Long id) {
+        CriteriaQuery<Room> cq = cb.createQuery(Room.class);
+        Root<Room> root = cq.from(Room.class);
+        cq.where(cb.equal(root.get("buildingId"), id));
+        List<Room> rooms = new Query<>(em, cq).getResultList();
+        if (!rooms.isEmpty()) {
+            throw new IllegalStateException("Нельзя удалить корпус: в нём есть комнаты");
         }
-        super.delete(id);
+        Building b = repo.find(id);
+        if (b != null) {
+            repo.delete(b);
+        }
     }
 }

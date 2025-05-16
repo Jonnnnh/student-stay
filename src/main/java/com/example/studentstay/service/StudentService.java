@@ -4,9 +4,9 @@ import com.example.studentstay.dao.PaymentDao;
 import com.example.studentstay.dao.StudentDao;
 import com.example.studentstay.execption.BusinessException;
 import com.example.studentstay.model.Student;
-import com.example.studentstay.model.StudentProfile;
+import com.example.studentstay.dto.StudentProfile;
 
-import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 public class StudentService {
@@ -20,79 +20,48 @@ public class StudentService {
     }
 
     public Student create(Student s) {
-        try {
-            studentDao.create(s);
-            return s;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        studentDao.create(s);
+        return s;
     }
 
     public Student update(Student s) {
-        try {
-            studentDao.update(s);
-            return s;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        studentDao.update(s);
+        return s;
     }
 
     public void delete(Long studentId) {
-        try {
-            boolean hasActive = studentDao.findAssignments(studentId)
-                    .stream()
-                    .anyMatch(a -> a.getLeaveDate() == null);
-            if (hasActive) {
-                throw new BusinessException("Нельзя удалить студента: есть активные заселения");
-            }
-            studentDao.delete(studentId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        boolean hasActive = studentDao.findAssignments(studentId)
+                .stream()
+                .anyMatch(a -> a.getLeaveDate() == null);
+        if (hasActive) {
+            throw new BusinessException("Нельзя удалить студента: есть активные заселения");
         }
+        studentDao.delete(studentId);
     }
 
     public Student findById(Long id) {
-        try {
-            return studentDao.findById(id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return studentDao.findById(id);
     }
 
     public List<Student> findAll() {
-        try {
-            return studentDao.findAll();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return studentDao.findAll();
     }
 
     public List<Student> findByLastName(String pattern) {
-        try {
-            return studentDao.findByLastName(pattern);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return studentDao.findByLastName(pattern);
     }
 
-    public List<Student> findByDobRange(java.time.LocalDate from,
-                                        java.time.LocalDate to) {
-        try {
-            return studentDao.findByDobRange(from, to);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public List<Student> findByDobRange(LocalDate from, LocalDate to) {
+        return studentDao.findByDobRange(from, to);
     }
 
     public StudentProfile getProfile(Long studentId) {
-        try {
-            Student s = studentDao.findById(studentId);
-            if (s == null) throw new BusinessException("Студент не найден");
-            List var1 = studentDao.findAssignments(studentId);
-            List var2 = paymentDao.findByStudent(studentId);
-            return new StudentProfile(s, var1, var2);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        Student s = studentDao.findById(studentId);
+        if (s == null) {
+            throw new BusinessException("Студент не найден");
         }
+        var assignments = studentDao.findAssignments(studentId);
+        var payments = paymentDao.findByStudent(studentId);
+        return new StudentProfile(s, assignments, payments);
     }
 }

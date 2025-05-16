@@ -1,64 +1,62 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
-import com.example.studentstay.jdbc.ReflectiveResultSetMapper;
 import com.example.studentstay.model.Assignment;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.query.Root;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
-import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
-public class AssignmentDao extends AbstractCrudDao<Assignment, Long> {
-    public AssignmentDao(Executor executor) {
-        super(executor, Assignment.class);
+public class AssignmentDao {
+    private final Repository<Assignment, Long> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public AssignmentDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Assignment.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "assignments";
+    public Assignment findById(Long id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Assignment a) throws SQLException {
-        String sql = "INSERT INTO assignments (student_id, room_id, assign_date, leave_date) VALUES (?, ?, ?, ?)";
-        executor.executeUpdate(sql,
-                a.getStudentId(),
-                a.getRoomId(),
-                Date.valueOf(a.getAssignDate()),
-                a.getLeaveDate() != null ? Date.valueOf(a.getLeaveDate()) : null);
+    public List<Assignment> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Assignment a) throws SQLException {
-        String sql = "UPDATE assignments SET student_id=?, room_id=?, assign_date=?, leave_date=? WHERE id=?";
-        executor.executeUpdate(sql,
-                a.getStudentId(),
-                a.getRoomId(),
-                Date.valueOf(a.getAssignDate()),
-                a.getLeaveDate() != null ? Date.valueOf(a.getLeaveDate()) : null,
-                a.getId());
+    public Assignment create(Assignment a) {
+        repo.save(a);
+        return a;
     }
 
-    public void leave(long assignmentId, LocalDate leaveDate) throws SQLException {
-        String sql = "UPDATE assignments SET leave_date = ? WHERE id = ?";
-        executor.executeUpdate(sql, Date.valueOf(leaveDate), assignmentId);
+    public Assignment update(Assignment a) {
+        repo.save(a);
+        return a;
     }
 
-    public List<Assignment> findActive() throws SQLException {
-        String sql = "SELECT * FROM assignments WHERE leave_date IS NULL ORDER BY assign_date";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Assignment.class)
-        );
+    public void delete(Long id) {
+        Assignment a = repo.find(id);
+        if (a != null) repo.delete(a);
     }
 
-    public List<Assignment> findByRoom(long roomId) throws SQLException {
-        String sql = "SELECT * FROM assignments WHERE room_id = ? ORDER BY assign_date DESC";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Assignment.class),
-                roomId
-        );
+    public void leave(Long assignmentId, LocalDate leaveDate) {
+        Assignment a = repo.find(assignmentId);
+        if (a != null) {
+            a.setLeaveDate(leaveDate);
+            repo.save(a);
+        }
+    }
+
+    public List<Assignment> findActive() {
+        CriteriaQuery<Assignment> cq = cb.createQuery(Assignment.class);
+        Root<Assignment> root = cq.from(Assignment.class);
+        cq.where(cb.isNull(root.get("leaveDate")));
+        return new Query<>(em, cq).getResultList();
     }
 }

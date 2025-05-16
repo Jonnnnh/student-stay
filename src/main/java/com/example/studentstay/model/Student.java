@@ -1,13 +1,28 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
 import java.time.LocalDate;
 
+@Entity(name = "students")
 public class Student {
+
+    @Id
     private Long id;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "phone")
     private String phone;
 
     public Student() {

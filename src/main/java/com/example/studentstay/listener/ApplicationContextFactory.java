@@ -1,37 +1,35 @@
 package com.example.studentstay.listener;
 
-import com.example.studentstay.config.DatabaseConfig;
-import com.example.studentstay.connection.ConnectionStrategy;
-import com.example.studentstay.connection.DatabaseConnection;
-import com.example.studentstay.connection.DriverManagerStrategy;
-import com.example.studentstay.jdbc.Executor;
+import com.example.studentstay.connection.DriverLoader;
+import com.example.studentstay.orm.dialect.PostgreSqlDialect;
+import com.example.studentstay.orm.session.EntityManager;
+import com.example.studentstay.orm.session.SessionFactory;
+import com.example.studentstay.orm.util.ConnectionProvider;
 import com.example.studentstay.dao.*;
 import com.example.studentstay.service.*;
 
 public class ApplicationContextFactory {
 
     public static ApplicationContext create() {
-        String url      = System.getenv("JDBC_URL");
-        String user     = System.getenv("JDBC_USER");
-        String password = System.getenv("JDBC_PASSWORD");
-        String driver   = System.getenv("JDBC_DRIVER") != null
+        String driver = System.getenv("JDBC_DRIVER") != null
                 ? System.getenv("JDBC_DRIVER")
                 : "org.postgresql.Driver";
+        DriverLoader.load(driver);
 
-        DatabaseConfig dbConfig = new DatabaseConfig(url, user, password);
-        ConnectionStrategy strategy = new DriverManagerStrategy();
-        DatabaseConnection connectionProvider =
-                new DatabaseConnection(dbConfig, strategy, driver);
-        Executor executor = new Executor(connectionProvider);
+        SessionFactory sessionFactory = new SessionFactory(
+                new ConnectionProvider(),
+                new PostgreSqlDialect()
+        );
+        EntityManager em = sessionFactory.createEntityManager();
 
-        EmployeeDao       employeeDao     = new EmployeeDao(executor);
-        RoleDao           roleDao         = new RoleDao(executor);
-        EmployeeRoleDao   employeeRoleDao = new EmployeeRoleDao(executor);
-        BuildingDao       buildingDao     = new BuildingDao(executor);
-        RoomDao           roomDao         = new RoomDao(executor);
-        StudentDao        studentDao      = new StudentDao(executor);
-        AssignmentDao     assignmentDao   = new AssignmentDao(executor);
-        PaymentDao        paymentDao      = new PaymentDao(executor);
+        EmployeeDao     employeeDao     = new EmployeeDao(em);
+        RoleDao         roleDao         = new RoleDao(em);
+        EmployeeRoleDao employeeRoleDao = new EmployeeRoleDao(em);
+        BuildingDao     buildingDao     = new BuildingDao(em);
+        RoomDao         roomDao         = new RoomDao(em);
+        StudentDao      studentDao      = new StudentDao(em);
+        AssignmentDao   assignmentDao   = new AssignmentDao(em);
+        PaymentDao      paymentDao      = new PaymentDao(em);
 
         AuthenticationService authService     =
                 new AuthenticationService(employeeDao, roleDao, employeeRoleDao);

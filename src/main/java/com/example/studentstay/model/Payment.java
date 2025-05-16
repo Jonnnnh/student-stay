@@ -1,13 +1,26 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity(name = "payments")
 public class Payment {
+
+    @Id
     private Long id;
+
+    @Column(name = "student_id", nullable = false)
     private Long studentId;
+
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
+
+    @Column(name = "payment_date", nullable = false)
     private LocalDate paymentDate;
+
+    @Column(name = "description")
     private String description;
 
     public Payment() {

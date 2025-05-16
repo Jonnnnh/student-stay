@@ -4,7 +4,6 @@ import com.example.studentstay.dao.BuildingDao;
 import com.example.studentstay.execption.BusinessException;
 import com.example.studentstay.model.Building;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class BuildingService {
@@ -15,44 +14,28 @@ public class BuildingService {
     }
 
     public Building create(Building b) {
-        try {
-            buildingDao.create(b);
-            return b;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        buildingDao.create(b);
+        return b;
     }
 
     public Building update(Building b) {
-        try {
-            buildingDao.update(b);
-            return b;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        buildingDao.update(b);
+        return b;
     }
 
     public void delete(Long id) {
         try {
             buildingDao.delete(id);
-        } catch (SQLException sqle) {
-            throw new BusinessException(sqle.getMessage());
+        } catch (BusinessException be) {
+            throw be;
         }
     }
 
     public Building findById(Long id) {
-        try {
-            return buildingDao.findById(id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return buildingDao.findById(id);
     }
 
     public List<Building> findAll() {
-        try {
-            return buildingDao.findAll();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return buildingDao.findAll();
     }
 }

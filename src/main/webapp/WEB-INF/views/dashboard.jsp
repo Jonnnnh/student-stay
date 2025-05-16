@@ -34,7 +34,14 @@
             <div class="card text-white bg-success h-100">
                 <div class="card-body">
                     <h5 class="card-title">Средняя длительность проживания</h5>
-                    <p class="display-4 mb-0">${avgStayDays} дн.</p>
+                    <p class="display-4 mb-0">
+                        <fmt:formatNumber
+                                value="${avgStayDays}"
+                                type="number"
+                                minFractionDigits="0"
+                                maxFractionDigits="0"
+                        /> дн.
+                    </p>
                 </div>
             </div>
         </div>

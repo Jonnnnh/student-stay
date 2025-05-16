@@ -1,14 +1,31 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
 import java.time.OffsetDateTime;
 
+@Entity(name = "employees")
 public class Employee {
+
+    @Id
     private Long id;
+
+    @Column(name = "username", nullable = false)
     private String username;
+
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "email", nullable = false)
     private String email;
+
+    @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     public Employee() {

@@ -1,61 +1,69 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
-import com.example.studentstay.jdbc.ReflectiveResultSetMapper;
 import com.example.studentstay.model.Payment;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.query.Root;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.SQLException;
 import java.util.List;
 
-public class PaymentDao extends AbstractCrudDao<Payment, Long> {
-    public PaymentDao(Executor executor) {
-        super(executor, Payment.class);
+public class PaymentDao {
+    private final Repository<Payment, Long> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public PaymentDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Payment.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "payments";
+    public Payment findById(Long id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Payment p) throws SQLException {
-        String sql = "INSERT INTO payments (student_id, amount, payment_date, description) VALUES (?, ?, ?, ?)";
-        executor.executeUpdate(sql,
-                p.getStudentId(),
-                p.getAmount(),
-                Date.valueOf(p.getPaymentDate()),
-                p.getDescription());
+    public List<Payment> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Payment p) throws SQLException {
-        String sql = "UPDATE payments SET student_id=?, amount=?, payment_date=?, description=? WHERE id=?";
-        executor.executeUpdate(sql,
-                p.getStudentId(),
-                p.getAmount(),
-                Date.valueOf(p.getPaymentDate()),
-                p.getDescription(),
-                p.getId());
+    public Payment create(Payment p) {
+        repo.save(p);
+        return p;
     }
 
-    public List<Payment> findByStudent(long studentId) throws SQLException {
-        String sql = "SELECT * FROM payments WHERE student_id = ? ORDER BY payment_date DESC";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Payment.class),
-                studentId
-        );
+    public Payment update(Payment p) {
+        repo.save(p);
+        return p;
     }
 
-    public BigDecimal getTotalByStudent(long studentId) throws SQLException {
-        String sql = "SELECT COALESCE(SUM(amount),0) FROM payments WHERE student_id = ?";
-        BigDecimal sum = executor.executeSingleResult(
-                sql,
-                (rs) -> rs.getBigDecimal(1),
-                studentId
-        );
-        return sum != null ? sum : BigDecimal.ZERO;
+    public void delete(Long id) {
+        var p = repo.find(id);
+        if (p != null) repo.delete(p);
+    }
+
+    public List<Payment> findByStudent(long studentId) {
+        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
+        Root<Payment> root = cq.from(Payment.class);
+        cq.where(cb.equal(root.get("studentId"), studentId));
+        return new Query<>(em, cq).getResultList();
+    }
+
+    public BigDecimal getTotalByStudent(long studentId) {
+        String sql = "SELECT COALESCE(SUM(amount),0) FROM payments WHERE student_id=?";
+        try (var conn = em.getConnectionProvider().getConnection();
+             var ps   = conn.prepareStatement(sql)) {
+            ps.setLong(1, studentId);
+            try (var rs = ps.executeQuery()) {
+                return rs.next()
+                        ? rs.getBigDecimal(1)
+                        : BigDecimal.ZERO;
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

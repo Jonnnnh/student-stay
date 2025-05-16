@@ -2,8 +2,8 @@ package com.example.studentstay.service;
 
 import com.example.studentstay.dao.AssignmentDao;
 import com.example.studentstay.model.Assignment;
+import com.example.studentstay.orm.transaction.TransactionManager;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,29 +15,22 @@ public class AssignmentService {
     }
 
     public Assignment assign(Long studentId, Long roomId, LocalDate date) {
-        try {
-            Assignment a = new Assignment();
-            a.setStudentId(studentId);
-            a.setRoomId(roomId);
-            a.setAssignDate(date);
-            assignmentDao.create(a);
-            return a;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        Assignment a = new Assignment();
+        a.setStudentId(studentId);
+        a.setRoomId(roomId);
+        a.setAssignDate(date);
+        assignmentDao.create(a);
+        return a;
     }
 
     public void leave(Long assignmentId, LocalDate leaveDate) {
-        try {
-            assignmentDao.leave(assignmentId, leaveDate);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        assignmentDao.leave(assignmentId, leaveDate);
     }
 
-    public Assignment transfer(Long currentAssignmentId,
-                               Long newRoomId,
-                               LocalDate transferDate) {
+    public void transfer(Long currentAssignmentId,
+                         Long newRoomId,
+                         LocalDate transferDate) {
+        TransactionManager.begin();
         try {
             assignmentDao.leave(currentAssignmentId, transferDate);
             Assignment old = assignmentDao.findById(currentAssignmentId);
@@ -46,33 +39,18 @@ public class AssignmentService {
             next.setRoomId(newRoomId);
             next.setAssignDate(transferDate);
             assignmentDao.create(next);
-            return next;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            TransactionManager.commit();
+        } catch (RuntimeException ex) {
+            TransactionManager.rollback();
+            throw ex;
         }
     }
 
     public Assignment findById(Long id) {
-        try {
-            return assignmentDao.findById(id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return assignmentDao.findById(id);
     }
 
     public List<Assignment> findActive() {
-        try {
-            return assignmentDao.findActive();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<Assignment> findByRoom(Long roomId) {
-        try {
-            return assignmentDao.findByRoom(roomId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return assignmentDao.findActive();
     }
 }

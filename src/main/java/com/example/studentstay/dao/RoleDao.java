@@ -1,39 +1,53 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
-import com.example.studentstay.jdbc.ReflectiveResultSetMapper;
 import com.example.studentstay.model.Role;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.query.Root;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
-import java.sql.SQLException;
+import java.util.List;
 
-public class RoleDao extends AbstractCrudDao<Role, Integer> {
-    public RoleDao(Executor executor) {
-        super(executor, Role.class);
+public class RoleDao {
+    private final Repository<Role, Integer> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public RoleDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Role.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "roles";
+    public Role findById(Integer id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Role r) throws SQLException {
-        String sql = "INSERT INTO roles (name) VALUES (?)";
-        executor.executeUpdate(sql, r.getName());
+    public List<Role> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Role r) throws SQLException {
-        String sql = "UPDATE roles SET name = ? WHERE id = ?";
-        executor.executeUpdate(sql, r.getName(), r.getId());
+    public Role create(Role r) {
+        repo.save(r);
+        return r;
     }
 
-    public Role findByName(String name) throws SQLException {
-        String sql = "SELECT * FROM roles WHERE name = ?";
-        return executor.executeSingleResult(
-                sql,
-                new ReflectiveResultSetMapper<>(Role.class),
-                name
-        );
+    public Role update(Role r) {
+        repo.save(r);
+        return r;
+    }
+
+    public void delete(Integer id) {
+        var r = repo.find(id);
+        if (r != null) repo.delete(r);
+    }
+
+    public Role findByName(String name) {
+        CriteriaQuery<Role> cq = cb.createQuery(Role.class);
+        Root<Role> root = cq.from(Role.class);
+        cq.where(cb.equal(root.get("name"), name));
+        return new Query<>(em, cq).getSingleResult();
     }
 }

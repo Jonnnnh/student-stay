@@ -1,4 +1,4 @@
-package com.example.studentstay.servlet;
+package com.example.studentstay.web;
 
 import com.example.studentstay.model.Student;
 import com.example.studentstay.service.StudentService;

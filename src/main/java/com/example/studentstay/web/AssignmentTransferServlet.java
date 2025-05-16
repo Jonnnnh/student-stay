@@ -24,7 +24,7 @@ public class AssignmentTransferServlet extends HttpServlet {
         Long assignmentId = Long.valueOf(req.getParameter("assignmentId"));
         Long newRoomId    = Long.valueOf(req.getParameter("newRoomId"));
         LocalDate date    = LocalDate.parse(req.getParameter("transferDate"));
-        Assignment next = assignmentService.transfer(assignmentId, newRoomId, date);
+        assignmentService.transfer(assignmentId, newRoomId, date);
         resp.sendRedirect(req.getContextPath() + "/assignments");
     }
 }

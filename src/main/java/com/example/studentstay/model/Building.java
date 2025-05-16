@@ -1,9 +1,19 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
+@Entity(name = "buildings")
 public class Building {
+
+    @Id
     private Long id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "address", nullable = false)
     private String address;
+
 
     public Building() {
     }

@@ -1,54 +1,53 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
-import com.example.studentstay.jdbc.ReflectiveResultSetMapper;
 import com.example.studentstay.model.Employee;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.query.Root;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
-import java.sql.SQLException;
+import java.util.List;
 
-public class EmployeeDao extends AbstractCrudDao<Employee, Long> {
-    public EmployeeDao(Executor executor) {
-        super(executor, Employee.class);
+public class EmployeeDao {
+    private final Repository<Employee, Long> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public EmployeeDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Employee.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "employees";
+    public Employee findById(Long id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Employee e) throws SQLException {
-        String sql = "INSERT INTO employees " +
-                "(username, password, first_name, last_name, email) " +
-                "VALUES (?, ?, ?, ?, ?)";
-        executor.executeUpdate(sql,
-                e.getUsername(),
-                e.getPassword(),
-                e.getFirstName(),
-                e.getLastName(),
-                e.getEmail());
+    public List<Employee> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Employee e) throws SQLException {
-        String sql = "UPDATE employees SET " +
-                "username = ?, password = ?, first_name = ?, last_name = ?, email = ? " +
-                "WHERE id = ?";
-        executor.executeUpdate(sql,
-                e.getUsername(),
-                e.getPassword(),
-                e.getFirstName(),
-                e.getLastName(),
-                e.getEmail(),
-                e.getId());
+    public Employee create(Employee e) {
+        repo.save(e);
+        return e;
     }
 
-    public Employee findByUsername(String username) throws SQLException {
-        String sql = "SELECT * FROM employees WHERE username = ?";
-        return executor.executeSingleResult(
-                sql,
-                new ReflectiveResultSetMapper<>(Employee.class),
-                username
-        );
+    public Employee update(Employee e) {
+        repo.save(e);
+        return e;
+    }
+
+    public void delete(Long id) {
+        Employee e = repo.find(id);
+        if (e != null) repo.delete(e);
+    }
+
+    public Employee findByUsername(String username) {
+        CriteriaQuery<Employee> cq = cb.createQuery(Employee.class);
+        Root<Employee> root = cq.from(Employee.class);
+        cq.where(cb.equal(root.get("username"), username));
+        return new Query<>(em, cq).getSingleResult();
     }
 }

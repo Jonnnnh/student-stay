@@ -1,7 +1,14 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
+@Entity(name = "roles")
 public class Role {
+
+    @Id
     private Integer id;
+
+    @Column(name = "name", nullable = false)
     private String name;
 
     public Role() {

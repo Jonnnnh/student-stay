@@ -1,91 +1,105 @@
 package com.example.studentstay.dao;
 
-import com.example.studentstay.jdbc.Executor;
-import com.example.studentstay.jdbc.ReflectiveResultSetMapper;
-import com.example.studentstay.model.Student;
 import com.example.studentstay.model.Assignment;
 import com.example.studentstay.model.Payment;
+import com.example.studentstay.model.Student;
+import com.example.studentstay.orm.query.CriteriaBuilder;
+import com.example.studentstay.orm.query.CriteriaQuery;
+import com.example.studentstay.orm.query.Query;
+import com.example.studentstay.orm.repository.JdbcRepository;
+import com.example.studentstay.orm.repository.Repository;
+import com.example.studentstay.orm.session.EntityManager;
 
-import java.sql.Date;
-import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
-public class StudentDao extends AbstractCrudDao<Student, Long> {
-    public StudentDao(Executor executor) {
-        super(executor, Student.class);
+public class StudentDao {
+    private final Repository<Student, Long> repo;
+    private final EntityManager em;
+    private final CriteriaBuilder cb = new CriteriaBuilder();
+
+    public StudentDao(EntityManager em) {
+        this.em   = em;
+        this.repo = new JdbcRepository<>(em, Student.class);
     }
 
-    @Override
-    protected String getTableName() {
-        return "students";
+    public Student findById(Long id) {
+        return repo.find(id);
     }
 
-    @Override
-    public void create(Student s) throws SQLException {
-        String sql = """
-                INSERT INTO students 
-                  (first_name, last_name, date_of_birth, email, phone) 
-                VALUES (?, ?, ?, ?, ?)
-                """;
-        executor.executeUpdate(sql,
-                s.getFirstName(),
-                s.getLastName(),
-                Date.valueOf(s.getDateOfBirth()),
-                s.getEmail(),
-                s.getPhone());
+    public List<Student> findAll() {
+        return repo.findAll();
     }
 
-    @Override
-    public void update(Student s) throws SQLException {
-        String sql = """
-                UPDATE students SET 
-                  first_name = ?, last_name = ?, date_of_birth = ?, email = ?, phone = ?
-                WHERE id = ?
-                """;
-        executor.executeUpdate(sql,
-                s.getFirstName(),
-                s.getLastName(),
-                Date.valueOf(s.getDateOfBirth()),
-                s.getEmail(),
-                s.getPhone(),
-                s.getId());
+    public Student create(Student s) {
+        repo.save(s);
+        return s;
     }
 
-    public List<Student> findByLastName(String lastNamePattern) throws SQLException {
-        String sql = "SELECT * FROM students WHERE last_name LIKE ? ORDER BY last_name";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Student.class),
-                "%" + lastNamePattern + "%"
-        );
+    public Student update(Student s) {
+        repo.save(s);
+        return s;
     }
 
-    public List<Student> findByDobRange(LocalDate from, LocalDate to) throws SQLException {
+    public void delete(Long id) {
+        Student s = repo.find(id);
+        if (s != null) repo.delete(s);
+    }
+
+    public List<Student> findByLastName(String lastNamePattern) {
+        CriteriaQuery<Student> cq = cb.createQuery(Student.class);
+        var root = cq.from(Student.class);
+        cq.where(cb.equal(root.get("lastName"), lastNamePattern));
+        return new Query<>(em, cq).getResultList();
+    }
+
+    public List<Student> findByDobRange(LocalDate from, LocalDate to) {
         String sql = "SELECT * FROM students WHERE date_of_birth BETWEEN ? AND ? ORDER BY date_of_birth";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Student.class),
-                Date.valueOf(from),
-                Date.valueOf(to)
-        );
+        try (Connection conn = em.getConnectionProvider().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDate(1, java.sql.Date.valueOf(from));
+            ps.setDate(2, java.sql.Date.valueOf(to));
+
+            List<Student> list = new ArrayList<>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(em.getDialect().mapRowToEntity(rs, Student.class));
+                }
+            }
+            return list;
+        } catch (Exception ex) {
+            throw new RuntimeException("Ошибка выборки по диапазону дат рождения", ex);
+        }
     }
 
-    public List<Assignment> findAssignments(long studentId) throws SQLException {
+    public List<Assignment> findAssignments(Long studentId) {
         String sql = "SELECT * FROM assignments WHERE student_id = ? ORDER BY assign_date DESC";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Assignment.class),
-                studentId
-        );
+        try (Connection conn = em.getConnectionProvider().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, studentId);
+
+            List<Assignment> list = new ArrayList<>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(em.getDialect().mapRowToEntity(rs, Assignment.class));
+                }
+            }
+            return list;
+        } catch (Exception ex) {
+            throw new RuntimeException("Ошибка выборки заселений студента", ex);
+        }
     }
 
-    public List<Payment> findPayments(long studentId) throws SQLException {
-        String sql = "SELECT * FROM payments WHERE student_id = ? ORDER BY payment_date DESC";
-        return executor.executeQuery(
-                sql,
-                new ReflectiveResultSetMapper<>(Payment.class),
-                studentId
-        );
+    public List<Payment> findPayments(Long studentId) {
+        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
+        var root = cq.from(Payment.class);
+        cq.where(cb.equal(root.get("studentId"), studentId));
+        return new Query<>(em, cq).getResultList();
     }
 }

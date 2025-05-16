@@ -1,10 +1,22 @@
 package com.example.studentstay.model;
 
+import com.example.studentstay.orm.annotation.*;
+
+@Entity(name = "rooms")
 public class Room {
+
+    @Id
     private Long id;
+
+    @Column(name = "building_id", nullable = false)
     private Long buildingId;
+
+    @Column(name = "room_number", nullable = false)
     private String roomNumber;
+
+    @Column(name = "capacity", nullable = false)
     private int capacity;
+    @Transient
     private Integer freeCount;
 
     public Room() {
