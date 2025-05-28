@@ -17,7 +17,7 @@ public class RoleDao {
     private final CriteriaBuilder cb = new CriteriaBuilder();
 
     public RoleDao(EntityManager em) {
-        this.em   = em;
+        this.em = em;
         this.repo = new JdbcRepository<>(em, Role.class);
     }
 

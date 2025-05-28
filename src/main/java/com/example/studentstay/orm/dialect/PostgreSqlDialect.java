@@ -13,13 +13,19 @@ import java.util.stream.Collectors;
 public class PostgreSqlDialect implements Dialect {
 
     @Override
-    public String openQuote() { return "\""; }
+    public String openQuote() {
+        return "\"";
+    }
 
     @Override
-    public String closeQuote() { return "\""; }
+    public String closeQuote() {
+        return "\"";
+    }
 
     @Override
-    public String getIdentityColumn() { return "SERIAL"; }
+    public String getIdentityColumn() {
+        return "SERIAL";
+    }
 
     @Override
     public String paginate(String sql, int offset, int limit) {

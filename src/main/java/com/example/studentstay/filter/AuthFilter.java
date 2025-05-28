@@ -3,6 +3,7 @@ package com.example.studentstay.filter;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest  r = (HttpServletRequest) req;
+        HttpServletRequest r = (HttpServletRequest) req;
         HttpServletResponse s = (HttpServletResponse) resp;
 
         String path = r.getServletPath();

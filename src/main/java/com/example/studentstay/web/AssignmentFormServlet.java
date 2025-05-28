@@ -7,6 +7,7 @@ import com.example.studentstay.service.RoomService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 
 @WebServlet("/assignmentForm")
@@ -26,7 +27,7 @@ public class AssignmentFormServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         req.setAttribute("students", studentService.findAll());
-        req.setAttribute("rooms",    roomService.findAll());
+        req.setAttribute("rooms", roomService.findAll());
         req.getRequestDispatcher("/WEB-INF/views/assignmentForm.jsp")
                 .forward(req, resp);
     }

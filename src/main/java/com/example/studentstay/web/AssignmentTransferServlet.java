@@ -5,6 +5,7 @@ import com.example.studentstay.service.AssignmentService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 import java.time.LocalDate;
 
@@ -22,8 +23,8 @@ public class AssignmentTransferServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Long assignmentId = Long.valueOf(req.getParameter("assignmentId"));
-        Long newRoomId    = Long.valueOf(req.getParameter("newRoomId"));
-        LocalDate date    = LocalDate.parse(req.getParameter("transferDate"));
+        Long newRoomId = Long.valueOf(req.getParameter("newRoomId"));
+        LocalDate date = LocalDate.parse(req.getParameter("transferDate"));
         assignmentService.transfer(assignmentId, newRoomId, date);
         resp.sendRedirect(req.getContextPath() + "/assignments");
     }

@@ -42,11 +42,11 @@ public class EmployeeRoleDao {
 
     public List<Role> findRolesByEmployee(long employeeId) {
         String sql = """
-            SELECT r.*
-              FROM roles r
-              JOIN employee_roles er ON r.id = er.role_id
-             WHERE er.employee_id = ?
-            """;
+                SELECT r.*
+                  FROM roles r
+                  JOIN employee_roles er ON r.id = er.role_id
+                 WHERE er.employee_id = ?
+                """;
         try (Connection conn = em.getConnectionProvider().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 

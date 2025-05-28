@@ -7,6 +7,7 @@ import com.example.studentstay.service.AuthenticationService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/", "/login"})

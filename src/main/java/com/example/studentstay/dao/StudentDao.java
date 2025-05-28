@@ -23,7 +23,7 @@ public class StudentDao {
     private final CriteriaBuilder cb = new CriteriaBuilder();
 
     public StudentDao(EntityManager em) {
-        this.em   = em;
+        this.em = em;
         this.repo = new JdbcRepository<>(em, Student.class);
     }
 

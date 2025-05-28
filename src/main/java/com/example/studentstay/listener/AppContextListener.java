@@ -13,13 +13,13 @@ public class AppContextListener implements ServletContextListener {
         ServletContext ctx = sce.getServletContext();
         try {
             ApplicationContext appCtx = ApplicationContextFactory.create();
-            ctx.setAttribute("authService",         appCtx.authService());
-            ctx.setAttribute("buildingService",     appCtx.buildingService());
-            ctx.setAttribute("roomService",         appCtx.roomService());
-            ctx.setAttribute("studentService",      appCtx.studentService());
-            ctx.setAttribute("assignmentService",   appCtx.assignmentService());
-            ctx.setAttribute("paymentService",      appCtx.paymentService());
-            ctx.setAttribute("dashboardService",    appCtx.dashboardService());
+            ctx.setAttribute("authService", appCtx.authService());
+            ctx.setAttribute("buildingService", appCtx.buildingService());
+            ctx.setAttribute("roomService", appCtx.roomService());
+            ctx.setAttribute("studentService", appCtx.studentService());
+            ctx.setAttribute("assignmentService", appCtx.assignmentService());
+            ctx.setAttribute("paymentService", appCtx.paymentService());
+            ctx.setAttribute("dashboardService", appCtx.dashboardService());
             ctx.log("AppContextListener initialization successful");
         } catch (Exception ex) {
             ctx.log("Error during AppContextListener initialization", ex);

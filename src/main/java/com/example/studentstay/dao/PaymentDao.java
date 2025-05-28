@@ -18,7 +18,7 @@ public class PaymentDao {
     private final CriteriaBuilder cb = new CriteriaBuilder();
 
     public PaymentDao(EntityManager em) {
-        this.em   = em;
+        this.em = em;
         this.repo = new JdbcRepository<>(em, Payment.class);
     }
 
@@ -55,7 +55,7 @@ public class PaymentDao {
     public BigDecimal getTotalByStudent(long studentId) {
         String sql = "SELECT COALESCE(SUM(amount),0) FROM payments WHERE student_id=?";
         try (var conn = em.getConnectionProvider().getConnection();
-             var ps   = conn.prepareStatement(sql)) {
+             var ps = conn.prepareStatement(sql)) {
             ps.setLong(1, studentId);
             try (var rs = ps.executeQuery()) {
                 return rs.next()

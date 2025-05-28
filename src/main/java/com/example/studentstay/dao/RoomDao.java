@@ -17,7 +17,7 @@ public class RoomDao {
     private final EntityManager em;
 
     public RoomDao(EntityManager em) {
-        this.em   = em;
+        this.em = em;
         this.repo = new JdbcRepository<>(em, Room.class);
     }
 
@@ -62,16 +62,16 @@ public class RoomDao {
 
     public int getFreeCount(Long roomId) {
         String sql = """
-            SELECT r.capacity - COALESCE(a.cnt,0)
-              FROM rooms r
-         LEFT JOIN (
-                SELECT room_id, COUNT(*) AS cnt
-                  FROM assignments
-                 WHERE leave_date IS NULL
-              GROUP BY room_id
-            ) a ON r.id = a.room_id
-             WHERE r.id = ?
-            """;
+                   SELECT r.capacity - COALESCE(a.cnt,0)
+                     FROM rooms r
+                LEFT JOIN (
+                       SELECT room_id, COUNT(*) AS cnt
+                         FROM assignments
+                        WHERE leave_date IS NULL
+                     GROUP BY room_id
+                   ) a ON r.id = a.room_id
+                    WHERE r.id = ?
+                """;
         try (Connection conn = em.getConnectionProvider().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -86,27 +86,27 @@ public class RoomDao {
 
     public List<Room> findByFilter(Long buildingId, int minCap, int maxCap, LocalDate date) {
         String sql = """
-            SELECT r.*
-              FROM rooms r
-         LEFT JOIN (
-                SELECT room_id, COUNT(*) AS cnt
-                  FROM assignments
-                 WHERE assign_date <= ?
-                   AND (leave_date IS NULL OR leave_date >= ?)
-              GROUP BY room_id
-            ) a ON r.id = a.room_id
-             WHERE r.building_id = ?
-               AND r.capacity BETWEEN ? AND ?
-               AND (r.capacity - COALESCE(a.cnt,0)) > 0
-            """;
+                   SELECT r.*
+                     FROM rooms r
+                LEFT JOIN (
+                       SELECT room_id, COUNT(*) AS cnt
+                         FROM assignments
+                        WHERE assign_date <= ?
+                          AND (leave_date IS NULL OR leave_date >= ?)
+                     GROUP BY room_id
+                   ) a ON r.id = a.room_id
+                    WHERE r.building_id = ?
+                      AND r.capacity BETWEEN ? AND ?
+                      AND (r.capacity - COALESCE(a.cnt,0)) > 0
+                """;
         try (Connection conn = em.getConnectionProvider().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setDate(1, java.sql.Date.valueOf(date));
             ps.setDate(2, java.sql.Date.valueOf(date));
             ps.setLong(3, buildingId);
-            ps.setInt (4, minCap);
-            ps.setInt (5, maxCap);
+            ps.setInt(4, minCap);
+            ps.setInt(5, maxCap);
 
             List<Room> list = new ArrayList<>();
             try (ResultSet rs = ps.executeQuery()) {

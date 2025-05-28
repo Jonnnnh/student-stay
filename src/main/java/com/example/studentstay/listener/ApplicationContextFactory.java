@@ -22,28 +22,28 @@ public class ApplicationContextFactory {
         );
         EntityManager em = sessionFactory.createEntityManager();
 
-        EmployeeDao     employeeDao     = new EmployeeDao(em);
-        RoleDao         roleDao         = new RoleDao(em);
+        EmployeeDao employeeDao = new EmployeeDao(em);
+        RoleDao roleDao = new RoleDao(em);
         EmployeeRoleDao employeeRoleDao = new EmployeeRoleDao(em);
-        BuildingDao     buildingDao     = new BuildingDao(em);
-        RoomDao         roomDao         = new RoomDao(em);
-        StudentDao      studentDao      = new StudentDao(em);
-        AssignmentDao   assignmentDao   = new AssignmentDao(em);
-        PaymentDao      paymentDao      = new PaymentDao(em);
+        BuildingDao buildingDao = new BuildingDao(em);
+        RoomDao roomDao = new RoomDao(em);
+        StudentDao studentDao = new StudentDao(em);
+        AssignmentDao assignmentDao = new AssignmentDao(em);
+        PaymentDao paymentDao = new PaymentDao(em);
 
-        AuthenticationService authService     =
+        AuthenticationService authService =
                 new AuthenticationService(employeeDao, roleDao, employeeRoleDao);
-        BuildingService       buildingService =
+        BuildingService buildingService =
                 new BuildingService(buildingDao);
-        RoomService           roomService     =
+        RoomService roomService =
                 new RoomService(roomDao);
-        StudentService        studentService  =
+        StudentService studentService =
                 new StudentService(studentDao, paymentDao);
-        AssignmentService     assignmentService =
+        AssignmentService assignmentService =
                 new AssignmentService(assignmentDao);
-        PaymentService        paymentService  =
+        PaymentService paymentService =
                 new PaymentService(paymentDao);
-        DashboardService      dashboardService =
+        DashboardService dashboardService =
                 new DashboardService(roomDao, assignmentDao, studentDao);
 
         return new ApplicationContext(

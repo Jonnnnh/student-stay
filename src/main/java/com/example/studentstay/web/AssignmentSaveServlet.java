@@ -5,6 +5,7 @@ import com.example.studentstay.service.AssignmentService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 import java.time.LocalDate;
 
@@ -21,7 +22,7 @@ public class AssignmentSaveServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Long studentId = Long.valueOf(req.getParameter("studentId"));
-        Long roomId    = Long.valueOf(req.getParameter("roomId"));
+        Long roomId = Long.valueOf(req.getParameter("roomId"));
         LocalDate date = LocalDate.parse(req.getParameter("assignDate"));
 
         assignmentService.assign(studentId, roomId, date);

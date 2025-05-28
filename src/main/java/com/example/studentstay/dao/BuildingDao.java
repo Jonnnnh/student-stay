@@ -18,7 +18,7 @@ public class BuildingDao {
     private final CriteriaBuilder cb = new CriteriaBuilder();
 
     public BuildingDao(EntityManager em) {
-        this.em   = em;
+        this.em = em;
         this.repo = new JdbcRepository<>(em, Building.class);
     }
 

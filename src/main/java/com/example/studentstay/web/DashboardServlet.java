@@ -5,6 +5,7 @@ import com.example.studentstay.service.DashboardService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 
 @WebServlet("/dashboard")
@@ -20,8 +21,8 @@ public class DashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         req.setAttribute("occupancyPct", dashboardService.getOccupancyPercentage());
-        req.setAttribute("avgStayDays",  dashboardService.getAverageStayDays());
-        req.setAttribute("warnings",     dashboardService.getWarnings());
+        req.setAttribute("avgStayDays", dashboardService.getAverageStayDays());
+        req.setAttribute("warnings", dashboardService.getWarnings());
         req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp")
                 .forward(req, resp);
     }
